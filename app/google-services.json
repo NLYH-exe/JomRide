@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "335713839742",
+    "project_id": "jom-ride-6156b",
+    "storage_bucket": "jom-ride-6156b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:335713839742:android:de6d973a2dc304b4f3862f",
+        "android_client_info": {
+          "package_name": "com.example.jomride"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC2VAl3jhuaiVwlslkXkqz8292xKbd56pw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

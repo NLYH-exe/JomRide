@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#121212">
+
+    <!-- Google Map Fragment -->
+    <fragment
+        android:id="@+id/trip_map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="300dp" />
+
+    <!-- Back Button -->
+    <Button
+        android:id="@+id/back_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="← Back"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#1F1F1F"
+        android:layout_margin="12dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true" />
+
+    <!-- Destination Name Display -->
+    <TextView
+        android:id="@+id/destination_text"
+        android:layout_below="@id/trip_map"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Destination: (loading...)"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <!-- Date Display -->
+    <TextView
+        android:id="@+id/selected_date"
+        android:layout_below="@id/destination_text"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select Date"
+        android:textColor="#BBBBBB"
+        android:textSize="16sp" />
+
+    <!-- Date Picker Button -->
+    <Button
+        android:id="@+id/pick_date_btn"
+        android:layout_below="@id/selected_date"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="16dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Pick Date"
+        android:backgroundTint="#1F1F1F"
+        android:textColor="#FFFFFF" />
+
+    <!-- Time Display -->
+    <TextView
+        android:id="@+id/selected_time"
+        android:layout_below="@id/pick_date_btn"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select Time"
+        android:textColor="#BBBBBB"
+        android:textSize="16sp" />
+
+    <!-- Time Picker Button -->
+    <Button
+        android:id="@+id/pick_time_btn"
+        android:layout_below="@id/selected_time"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="16dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Pick Time"
+        android:backgroundTint="#1F1F1F"
+        android:textColor="#FFFFFF" />
+
+    <!-- Friends Section -->
+    <LinearLayout
+        android:id="@+id/friends_section"
+        android:layout_below="@id/pick_time_btn"
+        android:layout_marginTop="24dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#222222"
+        android:padding="12dp">
+
+        <!-- Section Label -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Friends (coming soon)"
+            android:textColor="#BBBBBB"
+            android:textSize="16sp" />
+
+        <!-- Placeholder Friend -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Friend A"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="8dp" />
+    </LinearLayout>
+
+    <!-- Set Navigation Button -->
+    <Button
+        android:id="@+id/set_trip_btn"
+        android:layout_below="@id/friends_section"
+        android:layout_marginTop="24dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Set &amp; Navigate"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#4285F4" />
+
+</RelativeLayout>
