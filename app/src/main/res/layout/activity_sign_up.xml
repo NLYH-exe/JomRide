@@ -20,10 +20,10 @@
         android:layout_marginBottom="10dp"/>
 
     <EditText
-        android:id="@+id/input_name"
+        android:id="@+id/input_username"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Full Name"
+        android:hint="Username"
         android:textColorHint="@android:color/darker_gray"
         android:background="@drawable/rounded_edittext"
         android:padding="12dp"
@@ -64,6 +64,17 @@
         android:background="@drawable/rounded_edittext"
         android:padding="12dp"
         android:inputType="textPassword"
+        android:layout_marginBottom="16dp"/>
+
+    <EditText
+        android:id="@+id/input_address"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Address"
+        android:textColorHint="@android:color/darker_gray"
+        android:textColor="@android:color/white"
+        android:background="@drawable/rounded_edittext"
+        android:padding="12dp"
         android:layout_marginBottom="16dp"/>
 
     <ProgressBar

@@ -10,9 +10,9 @@
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/jom_ride"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@mipmap/jom_ride"
         android:supportsRtl="true"
         android:theme="@style/Theme.JomRide"
         tools:targetApi="31">
@@ -34,6 +34,9 @@
         <activity android:name=".TripPlanActivity" />
         <activity android:name=".SignUpActivity" />
         <activity android:name=".ForgotPasswordActivity" />
+        <activity android:name=".UserSettingsActivity" />
+        <activity android:name=".LoginActivity" />
+        <activity android:name=".FriendListActivity" />
     </application>
 
 </manifest>

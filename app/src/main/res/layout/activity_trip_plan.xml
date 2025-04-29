@@ -102,17 +102,26 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Friends (coming soon)"
+            android:text="Friends"
             android:textColor="#BBBBBB"
             android:textSize="16sp" />
 
-        <!-- Placeholder Friend -->
-        <TextView
-            android:layout_width="wrap_content"
+        <!-- Friends List (to be dynamically added) -->
+        <LinearLayout
+            android:id="@+id/friends_list"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <!-- Add Friends Button (to open the popup) -->
+        <Button
+            android:id="@+id/select_friends_btn"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Friend A"
+            android:text="Select Friends"
+            android:backgroundTint="#1F1F1F"
             android:textColor="#FFFFFF"
-            android:layout_marginTop="8dp" />
+            android:layout_marginTop="16dp" />
     </LinearLayout>
 
     <!-- Set Navigation Button -->
