@@ -1,13 +1,31 @@
-    package com.example.jomride;
+package com.example.jomride;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
-public class HomeActivity extends AppCompatActivity {
+    public class HomeActivity extends AppCompatActivity {
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        // 1) Check if a user is signed in
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            // 2) No user -> go back to Login (MainActivity), clearing everything
+            Intent toLogin = new Intent(this, MainActivity.class)
+                    .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(toLogin);
+            finish(); // prevent returning here
+            return;
+        }
+    }
 
     @SuppressLint("NonConstantResourceId")
     @Override
