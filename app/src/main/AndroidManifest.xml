@@ -2,9 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-feature android:name="android.hardware.location.gps" android:required="true"/>
+    <uses-feature android:name="android.hardware.location" android:required="true"/>
 
     <application
         android:allowBackup="true"
@@ -37,6 +39,7 @@
         <activity android:name=".UserSettingsActivity" />
         <activity android:name=".LoginActivity" />
         <activity android:name=".FriendListActivity" />
+        <activity android:name=".FinalTripActivity" />
     </application>
 
 </manifest>

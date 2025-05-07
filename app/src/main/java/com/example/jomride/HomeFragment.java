@@ -3,7 +3,6 @@ package com.example.jomride;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,6 +16,7 @@ import android.widget.Toast;
 import android.widget.Button;
 import android.app.AlertDialog;
 import android.widget.ImageButton;
+import android.content.res.Resources;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -45,6 +45,9 @@ import com.google.android.libraries.places.widget.Autocomplete;
 import com.google.android.libraries.places.widget.AutocompleteActivity;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -60,10 +63,16 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     private String selectedDestinationName;
     private ImageButton btnMyLocation;
 
+    private DatabaseReference placesRef;  // Firebase reference for places
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
+
+        // Initialize Firebase Database
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        placesRef = database.getReference("places");
 
         // Initialize Places API
         Places.initialize(requireContext(), "AIzaSyA0orkTD5Y6vQaIQxb9LxWV5Fer3c2HZY8");
@@ -146,10 +155,12 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     }
 
     private void showPoiPopup(PointOfInterest poi) {
-        showPlacePopup(poi.name, poi.latLng); // use same custom popup
-    }
+        if (poi == null) {
+            Log.e("HomeFragment", "POI is null");
+            return; // Exit if POI is null
+        }
 
-    private void showPlacePopup(String name, LatLng latLng) {
+        Log.d("HomeFragment", "POI clicked: " + poi.name);
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
         View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.popup_place, null);
         builder.setView(dialogView);
@@ -158,24 +169,18 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
 
         TextView title = dialogView.findViewById(R.id.place_title);
         Button navigateBtn = dialogView.findViewById(R.id.navigate_button_popup);
-        Button saveBtn = dialogView.findViewById(R.id.save_place_button);
         ImageView closeBtn = dialogView.findViewById(R.id.close_button);
 
-        title.setText(name);
+        title.setText(poi.name);
 
         navigateBtn.setOnClickListener(v -> {
-            selectedDestinationLatLng = latLng;
-            selectedDestinationName = name;
+            selectedDestinationLatLng = poi.latLng;
+            selectedDestinationName = poi.name;
             Intent intent = new Intent(getContext(), TripPlanActivity.class);
-            intent.putExtra("dest_name", name);
-            intent.putExtra("dest_lat", latLng.latitude);
-            intent.putExtra("dest_lng", latLng.longitude);
+            intent.putExtra("dest_name", poi.name);
+            intent.putExtra("dest_lat", poi.latLng.latitude);
+            intent.putExtra("dest_lng", poi.latLng.longitude);
             startActivity(intent);
-            dialog.dismiss();
-        });
-
-        saveBtn.setOnClickListener(v -> {
-            savePlace(name, latLng);
             dialog.dismiss();
         });
 
@@ -184,8 +189,36 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         dialog.show();
     }
 
-    private void savePlace(String name, LatLng latLng) {
-        Toast.makeText(requireContext(), name + " saved!", Toast.LENGTH_SHORT).show();
+
+    private void showPlacePopup(String name, LatLng latLng) {
+        Log.d("HomeFragment", "showPlacePopup called with name: " + name + ", LatLng: " + latLng); // Added logging
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.popup_place, null);
+        builder.setView(dialogView);
+
+        AlertDialog dialog = builder.create();
+
+        TextView title = dialogView.findViewById(R.id.place_title);
+        Button navigateBtn = dialogView.findViewById(R.id.navigate_button_popup);
+        ImageView closeBtn = dialogView.findViewById(R.id.close_button);
+
+        title.setText(name);
+
+        navigateBtn.setOnClickListener(v -> {
+            selectedDestinationLatLng = latLng;
+            selectedDestinationName = name;
+            Log.d("HomeFragment", "Navigating to destination: " + selectedDestinationName + " at " + selectedDestinationLatLng); // Added logging
+            Intent intent = new Intent(getContext(), TripPlanActivity.class);
+            intent.putExtra("dest_name", name);
+            intent.putExtra("dest_lat", latLng.latitude);
+            intent.putExtra("dest_lng", latLng.longitude);
+            startActivity(intent);
+            dialog.dismiss();
+        });
+
+        closeBtn.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
     }
 
     @Override
@@ -208,26 +241,19 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
 
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 15));
             }
-        } else if (resultCode == AutocompleteActivity.RESULT_ERROR) {
-            Status status = Autocomplete.getStatusFromIntent(data);
-            Toast.makeText(requireContext(), "Error: " + status.getStatusMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                if (mMap != null) {
-                    if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                        mMap.setMyLocationEnabled(true);
-                        getCurrentLocation();
-                    }
-                }
-            } else {
-                Toast.makeText(requireContext(), "Permission denied", Toast.LENGTH_SHORT).show();
-            }
+    // PlaceData class to store place info
+    public static class PlaceData {
+        public String name;
+        public double latitude;
+        public double longitude;
+
+        public PlaceData(String name, double latitude, double longitude) {
+            this.name = name;
+            this.latitude = latitude;
+            this.longitude = longitude;
         }
     }
 }

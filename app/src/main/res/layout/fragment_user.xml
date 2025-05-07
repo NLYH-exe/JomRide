@@ -1,11 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:padding="16dp"
+    tools:context=".UserFragment">
 
     <LinearLayout
+        android:id="@+id/user_content_layout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -45,6 +48,13 @@
             android:layout_marginTop="6dp"
             android:layout_gravity="center_horizontal" />
 
+        <!-- Trip list below address -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvTrips"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp" />
+
         <Button
             android:id="@+id/user_settings_btn"
             android:layout_width="match_parent"
@@ -67,7 +77,6 @@
             android:layout_marginTop="12dp"
             android:textColor="@android:color/white"
             android:backgroundTint="@android:color/holo_red_light" />
-
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

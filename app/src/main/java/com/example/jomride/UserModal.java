@@ -1,29 +1,28 @@
 package com.example.jomride;
 
-class UserModel {
+public class UserModal {
     private String uid;
     private String username;
+    private String address; // ✅ Add this line
 
-    public UserModel() { /* required for Firebase */ }
+    // Zero‑argument constructor for Firebase
+    public UserModal() { }
 
-    public UserModel(String uid, String username) {
+    // Convenience constructor
+    public UserModal(String uid, String username) {
         this.uid = uid;
         this.username = username;
     }
 
-    public String getUid() {
-        return uid;
-    }
+    // UID
+    public String getUid() { return uid; }
+    public void setUid(String uid) { this.uid = uid; }
 
-    public String getUsername() {
-        return username;
-    }
+    // Username
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
 
-    public void setUid(String uid) {
-        this.uid = uid;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
+    // Address ✅ Add getter and setter
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
 }

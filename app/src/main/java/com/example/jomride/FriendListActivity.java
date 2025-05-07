@@ -50,6 +50,8 @@ public class FriendListActivity extends AppCompatActivity {
             return;
         }
         currentUid = user.getUid();
+
+        // Initialize Firebase with the correct database URL
         usersRef = FirebaseDatabase.getInstance().getReference("users");
 
         // RecyclerViews
@@ -71,20 +73,23 @@ public class FriendListActivity extends AppCompatActivity {
         String query = searchBar.getText().toString().trim();
         if (query.isEmpty()) return;
 
+        // Querying users by username
         usersRef.orderByChild("username").equalTo(query)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot ds) {
-                        List<UserModel> results = new ArrayList<>();
+                        List<UserModal> results = new ArrayList<>();
                         for (DataSnapshot snap : ds.getChildren()) {
                             String uid = snap.getKey();
                             String name = snap.child("username").getValue(String.class);
-                            if (!uid.equals(currentUid)) results.add(new UserModel(uid, name));
+                            if (!uid.equals(currentUid)) results.add(new UserModal(uid, name));
                         }
                         searchAdapter.updateItems(results);
-                        rvSearch.setVisibility(results.isEmpty()? View.GONE: View.VISIBLE);
+                        rvSearch.setVisibility(results.isEmpty() ? View.GONE : View.VISIBLE);
                     }
-                    @Override public void onCancelled(@NonNull DatabaseError e) {}
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError e) {}
                 });
     }
 
@@ -93,7 +98,7 @@ public class FriendListActivity extends AppCompatActivity {
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot ds) {
-                        List<UserModel> list = new ArrayList<>();
+                        List<UserModal> list = new ArrayList<>();
                         if (!ds.exists()) {
                             friendsAdapter.updateItems(list);
                             return;
@@ -106,16 +111,20 @@ public class FriendListActivity extends AppCompatActivity {
                                         @Override
                                         public void onDataChange(@NonNull DataSnapshot snap) {
                                             String name = snap.child("username").getValue(String.class);
-                                            list.add(new UserModel(uid, name));
+                                            list.add(new UserModal(uid, name));
                                             if (list.size() == total) {
                                                 friendsAdapter.updateItems(list);
                                             }
                                         }
-                                        @Override public void onCancelled(@NonNull DatabaseError e) {}
+
+                                        @Override
+                                        public void onCancelled(@NonNull DatabaseError e) {}
                                     });
                         }
                     }
-                    @Override public void onCancelled(@NonNull DatabaseError e) {}
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError e) {}
                 });
     }
 

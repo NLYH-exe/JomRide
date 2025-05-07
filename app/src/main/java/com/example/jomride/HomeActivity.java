@@ -43,8 +43,6 @@ import com.google.firebase.auth.FirebaseUser;
 
             if (item.getItemId() == R.id.nav_home) {
                 selectedFragment = new HomeFragment();
-            } else if (item.getItemId() == R.id.nav_places) {
-                selectedFragment = new PlacesFragment();
             } else if (item.getItemId() == R.id.nav_contacts) {
                 selectedFragment = new UserFragment();
             }

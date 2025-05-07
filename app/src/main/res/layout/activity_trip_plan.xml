@@ -1,141 +1,99 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#121212">
+    tools:context=".TripPlanActivity">
 
-    <!-- Google Map Fragment -->
-    <fragment
-        android:id="@+id/trip_map"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
-        android:layout_width="match_parent"
-        android:layout_height="300dp" />
-
-    <!-- Back Button -->
-    <Button
-        android:id="@+id/back_btn"
+    <!-- Title: Plan Your Trip -->
+    <TextView
+        android:id="@+id/titleText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="← Back"
-        android:textColor="#FFFFFF"
-        android:backgroundTint="#1F1F1F"
-        android:layout_margin="12dp"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true" />
-
-    <!-- Destination Name Display -->
-    <TextView
-        android:id="@+id/destination_text"
-        android:layout_below="@id/trip_map"
-        android:layout_marginTop="16dp"
+        android:text="Plan Your Trip"
+        android:textSize="24sp"
+        android:textColor="@android:color/white"
+        android:textStyle="bold"
+        android:layout_marginTop="32dp"
         android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_width="match_parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Destination Text (Loaded from HomeFragment) -->
+    <TextView
+        android:id="@+id/destinationText"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Destination: (loading...)"
-        android:textColor="#FFFFFF"
+        android:text="Destination: "
         android:textSize="18sp"
-        android:textStyle="bold" />
-
-    <!-- Date Display -->
-    <TextView
-        android:id="@+id/selected_date"
-        android:layout_below="@id/destination_text"
-        android:layout_marginTop="16dp"
+        android:textColor="@android:color/white"
+        android:layout_marginTop="32dp"
         android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/titleText" />
+
+    <!-- Date and Time Picker -->
+    <TextView
+        android:id="@+id/dateTimeText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Select Date"
-        android:textColor="#BBBBBB"
-        android:textSize="16sp" />
+        android:text="Select Date and Time"
+        android:textSize="18sp"
+        android:textColor="@android:color/white"
+        android:layout_marginTop="24dp"
+        android:layout_marginStart="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/destinationText" />
 
-    <!-- Date Picker Button -->
     <Button
-        android:id="@+id/pick_date_btn"
-        android:layout_below="@id/selected_date"
+        android:id="@+id/dateTimeButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Pick Date and Time"
         android:layout_marginTop="8dp"
         android:layout_marginStart="16dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Pick Date"
-        android:backgroundTint="#1F1F1F"
-        android:textColor="#FFFFFF" />
+        android:layout_marginEnd="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/dateTimeText" />
 
-    <!-- Time Display -->
-    <TextView
-        android:id="@+id/selected_time"
-        android:layout_below="@id/pick_date_btn"
-        android:layout_marginTop="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Select Time"
-        android:textColor="#BBBBBB"
-        android:textSize="16sp" />
-
-    <!-- Time Picker Button -->
+    <!-- Choose Friends Button -->
     <Button
-        android:id="@+id/pick_time_btn"
-        android:layout_below="@id/selected_time"
-        android:layout_marginTop="8dp"
-        android:layout_marginStart="16dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Pick Time"
-        android:backgroundTint="#1F1F1F"
-        android:textColor="#FFFFFF" />
-
-    <!-- Friends Section -->
-    <LinearLayout
-        android:id="@+id/friends_section"
-        android:layout_below="@id/pick_time_btn"
+        android:id="@+id/selectFriendsButton"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="Select Friends"
+        android:textSize="18sp"
         android:layout_marginTop="24dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
+        android:padding="12dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/dateTimeButton" />
+
+    <!-- RecyclerView for displaying friends -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/friendRecycler"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:background="#222222"
-        android:padding="12dp">
+        android:layout_height="0dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/selectFriendsButton"
+        app:layout_constraintBottom_toTopOf="@id/scheduleTripButton" />
 
-        <!-- Section Label -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Friends"
-            android:textColor="#BBBBBB"
-            android:textSize="16sp" />
-
-        <!-- Friends List (to be dynamically added) -->
-        <LinearLayout
-            android:id="@+id/friends_list"
-            android:orientation="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <!-- Add Friends Button (to open the popup) -->
-        <Button
-            android:id="@+id/select_friends_btn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Select Friends"
-            android:backgroundTint="#1F1F1F"
-            android:textColor="#FFFFFF"
-            android:layout_marginTop="16dp" />
-    </LinearLayout>
-
-    <!-- Set Navigation Button -->
+    <!-- Schedule Trip Button -->
     <Button
-        android:id="@+id/set_trip_btn"
-        android:layout_below="@id/friends_section"
+        android:id="@+id/scheduleTripButton"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="Schedule Trip"
+        android:textSize="18sp"
         android:layout_marginTop="24dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Set &amp; Navigate"
-        android:textColor="#FFFFFF"
-        android:backgroundTint="#4285F4" />
+        android:padding="12dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/selectFriendsButton" /> <!-- Positioned below the Select Friends Button -->
 
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

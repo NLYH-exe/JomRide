@@ -41,7 +41,7 @@ public class SignUpActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
 
         // IMPORTANT: Initialize Firebase Database with YOUR database URL
-        mDatabase = FirebaseDatabase.getInstance("https://jom-ride-6156b-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference();
+            mDatabase = FirebaseDatabase.getInstance().getReference();
 
         // Initialize UI elements
         usernameInput = findViewById(R.id.input_username);

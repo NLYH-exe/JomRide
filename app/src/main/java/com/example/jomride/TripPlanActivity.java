@@ -1,323 +1,262 @@
 package com.example.jomride;
 
-import android.Manifest;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.location.Geocoder;
-import android.location.Address;
-import android.location.Location;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
-import android.widget.LinearLayout;
+import android.widget.DatePicker;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresPermission;
-import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.FragmentActivity;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CameraPosition;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MapStyleOptions;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.maps.android.PolyUtil;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.*;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Locale;
+public class TripPlanActivity extends AppCompatActivity {
 
-public class TripPlanActivity extends FragmentActivity implements OnMapReadyCallback {
+    private TextView destinationText, dateTimeText;
+    private Button dateTimeButton, selectFriendsButton, scheduleTripButton;
+    private RecyclerView friendRecycler;
 
-    private GoogleMap mMap;
-    private LatLng destinationLatLng;
-    private String destinationName;
-    private FusedLocationProviderClient fusedLocationClient;
-    private LocationCallback locationCallback;
-    private Marker userMarker;
-    private Polyline routePolyline;
-    private TextView destTextView, timeTextView, dateTextView;
-    private Button timePickerButton, datePickerButton, backButton, setTripButton, selectFriendsButton;
-    private LinearLayout friendsLayout;
-    private LatLng currentLocation;
+    private List<UserModal> friendList = new ArrayList<>();
+    private boolean[] friendChecked;
+    private List<UserModal> selectedFriends = new ArrayList<>();
 
-    private List<Friend> allFriends = Arrays.asList(
-            new Friend("Sidney", "2406, Jln Seksyen 2/11, 31900 Kampar, Perak"),
-            new Friend("Nigel", "Kampar Lake Campus Condominium, Jln Kolej, Taman Bandar Baru, 31900 Kampar, Perak"),
-            new Friend("Stanley", "Meadow Park, 31900, Kampar, Perak")
-    );
-
-    // Add a global variable to store the waypoints
-    private List<LatLng> selectedWaypoints = new ArrayList<>();
+    private DatabaseReference usersRef, friendsRef;
+    private String currentUserId, destination, selectedDateTime = "";
+    private double destLat, destLng;
+    private boolean friendsLoaded = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_trip_plan);
 
-        destinationName = getIntent().getStringExtra("dest_name");
-        double lat = getIntent().getDoubleExtra("dest_lat", 0);
-        double lng = getIntent().getDoubleExtra("dest_lng", 0);
-        destinationLatLng = new LatLng(lat, lng);
+        // Wire up views
+        destinationText = findViewById(R.id.destinationText);
+        dateTimeText = findViewById(R.id.dateTimeText);
+        dateTimeButton = findViewById(R.id.dateTimeButton);
+        selectFriendsButton = findViewById(R.id.selectFriendsButton);
+        scheduleTripButton = findViewById(R.id.scheduleTripButton);
+        friendRecycler = findViewById(R.id.friendRecycler);
 
-        destTextView = findViewById(R.id.destination_text);
-        timeTextView = findViewById(R.id.selected_time);
-        dateTextView = findViewById(R.id.selected_date);
-        timePickerButton = findViewById(R.id.pick_time_btn);
-        datePickerButton = findViewById(R.id.pick_date_btn);
-        backButton = findViewById(R.id.back_btn);
-        setTripButton = findViewById(R.id.set_trip_btn);
-        selectFriendsButton = findViewById(R.id.select_friends_btn);
-        friendsLayout = findViewById(R.id.friends_section);
+        // Get destination and coordinates from Intent
+        destination = getIntent().getStringExtra("dest_name");
+        destLat = getIntent().getDoubleExtra("dest_lat", 0);
+        destLng = getIntent().getDoubleExtra("dest_lng", 0);
 
-        destTextView.setText(destinationName);
-
-        timePickerButton.setOnClickListener(v -> showTimePickerDialog());
-        datePickerButton.setOnClickListener(v -> showDatePickerDialog());
-        backButton.setOnClickListener(v -> finish());
-
-        // Fix here: Don't send the route immediately
-        setTripButton.setOnClickListener(v -> openGoogleMapsNavigation());
-
-        selectFriendsButton.setOnClickListener(v -> showFriendSelectionDialog());
-
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.trip_map);
-        if (mapFragment != null) {
-            mapFragment.getMapAsync(this);
+        // Check if destination and coordinates are valid
+        if (destination == null || destLat == 0 || destLng == 0) {
+            Toast.makeText(this, "Invalid destination or coordinates", Toast.LENGTH_SHORT).show();
+            finish(); // Exit activity if data is invalid
+            return;
         }
+
+        destinationText.setText("Destination: " + (destination != null ? destination : "(none)"));
+
+        // Firebase setup
+        currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        usersRef = FirebaseDatabase.getInstance().getReference("users");
+        friendsRef = usersRef.child(currentUserId).child("friends");
+
+        // RecyclerView setup (optional)
+        friendRecycler.setLayoutManager(new LinearLayoutManager(this));
+        friendRecycler.setAdapter(new FriendSelectAdapter(this, friendList));
+
+        // Disable selectFriendsButton until friends are loaded
+        selectFriendsButton.setEnabled(false);
+
+        // Fetch friends from Firebase
+        fetchFriendsFromFirebase();
+
+        // Button listeners
+        dateTimeButton.setOnClickListener(v -> pickDateTime());
+        selectFriendsButton.setOnClickListener(v -> showFriendDialog());
+        scheduleTripButton.setOnClickListener(v -> scheduleTrip());
     }
 
-    private void showFriendSelectionDialog() {
-        String[] friendNames = new String[allFriends.size()];
-        boolean[] selected = new boolean[allFriends.size()];
-        for (int i = 0; i < allFriends.size(); i++) {
-            friendNames[i] = allFriends.get(i).name;
-        }
+    private void fetchFriendsFromFirebase() {
+        friendsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                friendList.clear();
+                if (!snapshot.exists() || snapshot.getChildrenCount() == 0) {
+                    friendChecked = new boolean[0];
+                    friendsLoaded = true;
+                    selectFriendsButton.setEnabled(true);
+                    return;
+                }
 
+                List<String> uids = new ArrayList<>();
+                for (DataSnapshot child : snapshot.getChildren()) {
+                    uids.add(child.getKey());
+                }
+                friendChecked = new boolean[uids.size()];
+                AtomicInteger remaining = new AtomicInteger(uids.size());
+
+                for (String uid : uids) {
+                    usersRef.child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot ds) {
+                            UserModal user = ds.getValue(UserModal.class);
+                            if (user != null) {
+                                user.setUid(ds.getKey());
+                                friendList.add(user);
+                            } else {
+                                UserModal fallback = new UserModal(ds.getKey(), ds.getKey());
+                                fallback.setUid(ds.getKey());
+                                friendList.add(fallback);
+                            }
+                            friendRecycler.getAdapter().notifyDataSetChanged();
+                            if (remaining.decrementAndGet() == 0) {
+                                friendsLoaded = true;
+                                selectFriendsButton.setEnabled(true);
+                                Log.d("TripPlan", "All friends loaded: " + friendList.size());
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError error) {
+                            Log.e("TripPlan", "Error loading friend " + uid, error.toException());
+                            if (remaining.decrementAndGet() == 0) {
+                                friendsLoaded = true;
+                                selectFriendsButton.setEnabled(true);
+                            }
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                Log.e("TripPlan", "Could not read friends node", error.toException());
+                friendChecked = new boolean[0];
+                friendsLoaded = true;
+                selectFriendsButton.setEnabled(true);
+            }
+        });
+    }
+
+    private void showFriendDialog() {
+        if (!friendsLoaded) {
+            Toast.makeText(this, "Friends loading, please wait…", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (friendList.isEmpty()) {
+            Toast.makeText(this, "No friends found", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        // Build names
+        String[] names = new String[friendList.size()];
+        for (int i = 0; i < friendList.size(); i++) {
+            names[i] = friendList.get(i).getUsername();
+        }
         new AlertDialog.Builder(this)
                 .setTitle("Select Friends")
-                .setMultiChoiceItems(friendNames, selected, (dialog, which, isChecked) -> selected[which] = isChecked)
+                .setMultiChoiceItems(names, friendChecked,
+                        (dialog, which, isChecked) -> friendChecked[which] = isChecked)
                 .setPositiveButton("OK", (dialog, which) -> {
-                    List<Friend> selectedFriends = new ArrayList<>();
-                    for (int i = 0; i < selected.length; i++) {
-                        if (selected[i]) selectedFriends.add(allFriends.get(i));
+                    selectedFriends.clear();
+                    for (int i = 0; i < friendChecked.length; i++) {
+                        if (friendChecked[i]) {
+                            selectedFriends.add(friendList.get(i));
+                        }
                     }
-                    // Fix here: Only resolve the addresses and store them
-                    resolveAddressesAndDrawRoute(selectedFriends);
+                    Toast.makeText(this,
+                            selectedFriends.size() + " friend(s) selected",
+                            Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
     }
 
-    private void resolveAddressesAndDrawRoute(List<Friend> selectedFriends) {
-        new Thread(() -> {
-            try {
-                Geocoder geocoder = new Geocoder(this, Locale.getDefault());
-                List<LatLng> waypoints = new ArrayList<>();
+    private void pickDateTime() {
+        final Calendar cal = Calendar.getInstance();
+        new DatePickerDialog(this, (v, y, m, d) -> {
+            cal.set(y, m, d);
+            new TimePickerDialog(this, (tp, h, min) -> {
+                cal.set(Calendar.HOUR_OF_DAY, h);
+                cal.set(Calendar.MINUTE, min);
+                selectedDateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(cal.getTime());
+                dateTimeText.setText("When: " + selectedDateTime);
+            },
+                    cal.get(Calendar.HOUR_OF_DAY),
+                    cal.get(Calendar.MINUTE),
+                    false).show();
+        },
+                cal.get(Calendar.YEAR),
+                cal.get(Calendar.MONTH),
+                cal.get(Calendar.DAY_OF_MONTH)).show();
+    }
 
-                // Add selected friends' locations
-                for (Friend friend : selectedFriends) {
-                    List<Address> results = geocoder.getFromLocationName(friend.address, 1);
-                    if (!results.isEmpty()) {
-                        Address addr = results.get(0);
-                        waypoints.add(new LatLng(addr.getLatitude(), addr.getLongitude()));
-                    }
-                }
+    private void scheduleTrip() {
+        if (selectedFriends.isEmpty()) {
+            Toast.makeText(TripPlanActivity.this, "Please select at least one friend first", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-                // Add current location and destination location
-                waypoints.add(currentLocation);
-                waypoints.add(destinationLatLng);
+        if (selectedDateTime.isEmpty()) {
+            Toast.makeText(TripPlanActivity.this, "Please select a date and time", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-                // Store the waypoints globally
-                selectedWaypoints.clear();
-                selectedWaypoints.addAll(waypoints);
-
-            } catch (Exception e) {
-                e.printStackTrace();
+        List<String> friendUids = new ArrayList<>();
+        for (UserModal user : selectedFriends) {
+            String uid = user.getUid();
+            if (uid != null && !uid.isEmpty()) {
+                friendUids.add(uid);
+            } else {
+                Log.e("TripPlan", "Skipping friend with invalid UID: " + user);
             }
-        }).start();
-    }
-
-    private void sendRouteToGoogleMaps(List<LatLng> waypoints) {
-        // Create a string with all the waypoints
-        StringBuilder waypointsParam = new StringBuilder();
-        for (LatLng point : waypoints) {
-            waypointsParam.append(point.latitude).append(",").append(point.longitude).append("|");
-        }
-        // Remove the last pipe
-        if (waypointsParam.length() > 0) {
-            waypointsParam.setLength(waypointsParam.length() - 1);
         }
 
-        // Construct the Google Maps navigation URL
-        String url = "google.navigation:q=" + waypoints.get(waypoints.size() - 1).latitude + "," + waypoints.get(waypoints.size() - 1).longitude +
-                "&waypoints=" + waypointsParam.toString() +
-                "&mode=d"; // 'd' stands for driving mode
+        usersRef.child(currentUserId).child("username").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snap) {
+                String driverUsername = snap.getValue(String.class);
 
-        // Start the Google Maps navigation intent
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-        intent.setPackage("com.google.android.apps.maps");
-        if (intent.resolveActivity(getPackageManager()) != null) {
-            startActivity(intent);
-        } else {
-            Toast.makeText(this, "Google Maps is not installed", Toast.LENGTH_SHORT).show();
-        }
-    }
+                TripData trip = new TripData(destination, selectedDateTime, friendUids, destLat, destLng);
+                trip.setDriverUsername(driverUsername);
+                Map<String, Object> tripValues = trip.toMap();
 
-    private void openGoogleMapsNavigation() {
-        if (!selectedWaypoints.isEmpty()) {
-            selectedWaypoints.add(destinationLatLng);  // Add destination at the end
-            sendRouteToGoogleMaps(selectedWaypoints);  // Send the selected waypoints to Google Maps
-        } else {
-            Toast.makeText(this, "No friends selected for the trip", Toast.LENGTH_SHORT).show();
-        }
-    }
+                DatabaseReference root = FirebaseDatabase.getInstance().getReference();
+                DatabaseReference driverTripsRef = root.child("users").child(currentUserId).child("trips");
+                String tripKey = driverTripsRef.push().getKey();
 
-    private void drawRouteWithWaypoints(LatLng origin, LatLng dest, List<LatLng> waypoints) {
-        StringBuilder waypointsParam = new StringBuilder();
-        for (LatLng point : waypoints) {
-            waypointsParam.append(point.latitude).append(",").append(point.longitude).append("|");
-        }
-
-        String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" + origin.latitude + "," + origin.longitude +
-                "&destination=" + dest.latitude + "," + dest.longitude +
-                (waypoints.isEmpty() ? "" : "&waypoints=" + waypointsParam.toString()) +
-                "&key=AIzaSyA0orkTD5Y6vQaIQxb9LxWV5Fer3c2HZY8";
-
-        new Thread(() -> {
-            try {
-                HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
-                conn.connect();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                StringBuilder responseBuilder = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    responseBuilder.append(line);
+                Map<String, Object> updates = new HashMap<>();
+                updates.put("/users/" + currentUserId + "/trips/" + tripKey, tripValues);
+                for (String friendId : friendUids) {
+                    updates.put("/users/" + friendId + "/trips/" + tripKey, tripValues);
                 }
 
-                JSONObject json = new JSONObject(responseBuilder.toString());
-                JSONArray routes = json.getJSONArray("routes");
-                if (routes.length() > 0) {
-                    JSONObject route = routes.getJSONObject(0);
-                    JSONObject overviewPolyline = route.getJSONObject("overview_polyline");
-                    String points = overviewPolyline.getString("points");
-                    List<LatLng> decodedPath = PolyUtil.decode(points);
-
-                    // Draw polyline on the map
-                    runOnUiThread(() -> {
-                        if (routePolyline != null) {
-                            routePolyline.remove();
-                        }
-                        routePolyline = mMap.addPolyline(new PolylineOptions().addAll(decodedPath).color(Color.BLUE));
-                    });
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }).start();
-    }
-
-    private void showTimePickerDialog() {
-        Calendar calendar = Calendar.getInstance();
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        int minute = calendar.get(Calendar.MINUTE);
-
-        new TimePickerDialog(this, (view, hourOfDay, minute1) -> {
-            timeTextView.setText(hourOfDay + ":" + minute1);
-        }, hour, minute, true).show();
-    }
-
-    private void showDatePickerDialog() {
-        Calendar calendar = Calendar.getInstance();
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
-
-        new DatePickerDialog(this, (view, year1, monthOfYear, dayOfMonth) -> {
-            dateTextView.setText(dayOfMonth + "/" + (monthOfYear + 1) + "/" + year1);
-        }, year, month, day).show();
-    }
-
-    @RequiresPermission(allOf = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION})
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-        mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style));
-
-        fusedLocationClient.getLastLocation().addOnSuccessListener(this, location -> {
-            if (location != null) {
-                currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 14));
-                userMarker = mMap.addMarker(new MarkerOptions().position(currentLocation).title("Your Location")
-                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
-
-                // Add destination marker
-                mMap.addMarker(new MarkerOptions().position(destinationLatLng).title(destinationName));
-
-                // Start listening for location updates
-                LocationRequest locationRequest = LocationRequest.create();
-                locationRequest.setInterval(10000);
-                locationRequest.setFastestInterval(5000);
-                locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-                locationCallback = new LocationCallback() {
-                    @Override
-                    public void onLocationResult(LocationResult locationResult) {
-                        if (locationResult != null) {
-                            Location location = locationResult.getLastLocation();
-                            if (location != null) {
-                                LatLng newLocation = new LatLng(location.getLatitude(), location.getLongitude());
-                                if (userMarker != null) {
-                                    userMarker.setPosition(newLocation);
-                                }
-                            }
-                        }
+                root.updateChildren(updates).addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Toast.makeText(TripPlanActivity.this, "Trip saved & shared!", Toast.LENGTH_SHORT).show();
+                        finish();
+                    } else {
+                        Exception e = task.getException();
+                        Log.e("TripPlan", "Batch write failed", e);
+                        Toast.makeText(TripPlanActivity.this, "Failed to save trip", Toast.LENGTH_SHORT).show();
                     }
-                };
+                });
+            }
 
-                fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null);
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("TripPlan", "Failed to read driver username", error.toException());
+                Toast.makeText(TripPlanActivity.this, "Failed to schedule trip", Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    // Class for Friend data
-    public static class Friend {
-        String name;
-        String address;
-
-        Friend(String name, String address) {
-            this.name = name;
-            this.address = address;
-        }
     }
 }

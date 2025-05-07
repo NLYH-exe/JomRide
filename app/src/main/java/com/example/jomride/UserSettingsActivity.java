@@ -50,9 +50,7 @@ public class UserSettingsActivity extends AppCompatActivity {
         }
 
         String userId = currentUser.getUid();
-        usersRef = FirebaseDatabase.getInstance("https://jom-ride-6156b-default-rtdb.asia-southeast1.firebasedatabase.app/")
-                .getReference("users")
-                .child(userId);
+        usersRef = FirebaseDatabase.getInstance().getReference("users").child(userId);
 
         // Set current email
         emailText.setText(currentUser.getEmail());

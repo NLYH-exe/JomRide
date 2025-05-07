@@ -17,7 +17,7 @@ public class FriendListAdapter extends RecyclerView.Adapter<FriendListAdapter.Vi
         void onAction(String uid, String username);
     }
 
-    private final List<UserModel> items = new ArrayList<>();
+    private final List<UserModal> items = new ArrayList<>();
     private final String actionType; // "add" or "remove"
     private final OnActionListener listener;
 
@@ -36,7 +36,7 @@ public class FriendListAdapter extends RecyclerView.Adapter<FriendListAdapter.Vi
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        UserModel user = items.get(position);
+        UserModal user = items.get(position);
         holder.usernameText.setText(user.getUsername());
         holder.actionButton.setText(actionType.equals("add") ? "Add" : "Remove");
         holder.actionButton.setOnClickListener(v -> listener.onAction(user.getUid(), user.getUsername()));
@@ -50,7 +50,7 @@ public class FriendListAdapter extends RecyclerView.Adapter<FriendListAdapter.Vi
     /**
      * Public method to update items list
      */
-    public void updateItems(List<UserModel> newItems) {
+    public void updateItems(List<UserModal> newItems) {
         items.clear();
         items.addAll(newItems);
         notifyDataSetChanged();

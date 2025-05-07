@@ -48,5 +48,13 @@ dependencies {
     implementation platform(libs.firebase.bom)
     implementation libs.firebase.analytics
     implementation libs.work.runtime
+    implementation libs.volley
+    implementation libs.android.maps.utils.v361
+    implementation libs.retrofit
+    implementation libs.converter.gson
+    implementation libs.okhttp
+    implementation libs.google.maps.services
+
+
 
 }
