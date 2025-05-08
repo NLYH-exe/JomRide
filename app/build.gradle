@@ -55,6 +55,4 @@ dependencies {
     implementation libs.okhttp
     implementation libs.google.maps.services
 
-
-
 }

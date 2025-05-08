@@ -75,7 +75,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         placesRef = database.getReference("places");
 
         // Initialize Places API
-        Places.initialize(requireContext(), "AIzaSyA0orkTD5Y6vQaIQxb9LxWV5Fer3c2HZY8");
+        Places.initialize(requireContext(), "Google_API_KEY");
         placesClient = Places.createClient(requireContext());
 
         // Fused location

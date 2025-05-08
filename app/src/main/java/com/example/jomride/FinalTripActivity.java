@@ -188,7 +188,7 @@ public class FinalTripActivity extends AppCompatActivity implements OnMapReadyCa
             }
         }
 
-        urlBuilder.append("&key=AIzaSyA0orkTD5Y6vQaIQxb9LxWV5Fer3c2HZY8");
+        urlBuilder.append("&key=Google_API_KEY"); // Replace with your actual Google Maps API key
 
         String url = urlBuilder.toString();
 
